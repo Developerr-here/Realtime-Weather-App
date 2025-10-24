@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title>Weather App</title>
+</head>
+
+<body class="bg-light">
+    <div class="container text-center mt-5">
+        <h1 class="mb-4">Realtime Weather app</h1>
+        <p id="status" class="lead text-muted">Detecting your location...</p>
+        <div id="weather" class="card mx-auto p-4 shadow" style="max-width:400px; display:none;">
+            <h2 id="location" class="card-title"></h2>
+            <img id="icon" class="my-3" src="" alt="weather-icon">
+            <p id="temp" class="h4"></p>
+            <p id="description" class="text-capitalize"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+
+
+            async function fetchWeather(lat, lon) {
+                const response = await fetch('/get_weather', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ lat, lon })
+                })
+
+                const data = await response.json();
+                if (data.error) {
+                    document.getElementById('status').textContent = data.error;
+
+                }
+                else {
+                    document.getElementById('status').style.display = 'none';
+                    document.getElementById('weather').style.display = 'block';
+                    document.getElementById('location').textContent = data.location;
+                    document.getElementById('temp').textContent = `${data.temperature}C`;
+                    document.getElementById('description').textContent = data.description;
+                    document.getElementById('icon').src = data.icon;
+                }
+
+            }
+
+
+            if (navigator.geolocation) {
+                //     navigator.geolocation.getCurrentPosition(
+
+                //         (pos) => {
+                //             console.log(pos.coords.latitude);
+                //             console.log(pos.coords.longitude);
+                //             fetchWeather(pos.coords.latitude, pos.coords.longitude);
+                //         },
+                //         (err) => {
+                //             console.error(err);
+                //             document.getElementById("status").textContent =
+                //                 "failed to detect your location.";
+
+                //         }
+                //     );
+                // }
+
+                navigator.geolocation.getCurrentPosition(
+                    (pos) => {
+                        const lat = pos.coords.latitude;
+                        const lon = pos.coords.longitude;
+                        console.log("Latitude:", lat, "Longitude:", lon);
+                        fetchWeather(lat, lon);
+                    },
+                    (err) => {
+                        console.error(err);
+                        document.getElementById("status").textContent =
+                            "Failed to detect your location.";
+                    }
+                );
+            }
+
+            else {
+                    document.getElementById("status").textContent = "Geolocation is not supported by this browser.";
+                }
+
+
+
+            }
+
+        );
+
+
+
+
+
+
+    </script>
+</body>
+
+</html>
